@@ -25,11 +25,11 @@ export default {
       'events?_limit=' + perPage + '&_page=' + page + '&title=' + keyword
     )
   },
-  uploadFile(file){
+  uploadFile(file) {
     let formData = new FormData()
     formData.append('file', file)
     return apiClient.post('/uploadFile', formData, {
-      headers:{
+      headers: {
         'Content-Type': 'multipart/form-data'
       }
     })

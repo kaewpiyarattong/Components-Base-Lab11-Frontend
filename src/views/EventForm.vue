@@ -21,7 +21,7 @@
         label="Select an Organizer"
       />
       <h3>The image of the Event</h3>
-      <UploadImages @changed="handleImages"/>
+      <UploadImages @changed="handleImages" />
 
       <button type="submit">Submit</button>
     </form>
@@ -36,7 +36,7 @@ import UploadImages from 'vue-upload-drop-images'
 export default {
   inject: ['GStore'],
 
-  components:{
+  components: {
     UploadImages
   },
 
@@ -47,7 +47,8 @@ export default {
         title: '',
         description: '',
         location: '',
-        organizer: { id: '', name: '' }
+        organizer: { id: '', name: '' },
+        imageUrls: []
       },
       files: []
     }
@@ -55,33 +56,35 @@ export default {
   methods: {
     saveEvent() {
       Promise.all(
-        this.files.map((file)=>{
+        this.files.map((file) => {
           return EventService.uploadFile(file)
         })
-      ).then((response)=>{
-        console.log(response)
-        console.log('finish upload file')
-      })
-      EventService.saveEvent(this.event)
-        .then((response) => {
-          console.log(response)
-          this.$router.push({
-            name: 'EventLayout',
-            params: { id: response.data.id }
+      ).then((res) => {
+        this.event.imageUrls = res.map((r) => r.data)
+        EventService.saveEvent(this.event)
+          .then((response) => {
+            console.log(response)
+            this.$router.push({
+              name: 'EventLayout',
+              params: { id: response.data.id }
+            })
+            this.GStore.flashMessage =
+              'You are successfully add a new event for ' + response.data.title
+            setTimeout(() => {
+              this.GStore.flashMessage = ''
+            }, 3000)
           })
-          this.GStore.flashMessage =
-            'You are successfully add a new event for ' + response.data.title
-          setTimeout(() => {
-            this.GStore.flashMessage = ''
-          }, 3000)
-        })
-        .catch(() => {
-          this.$router.push('NetworkError')
-        })
+          .catch(() => {
+            this.$router.push('NetworkError')
+          })
+      })
     },
-    handleImages(files){
+    handleImages(files) {
       this.files = files
     }
+  },
+  handleImages(files) {
+    this.files = files
   }
 }
 </script>
