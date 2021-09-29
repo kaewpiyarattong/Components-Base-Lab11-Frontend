@@ -1,75 +1,56 @@
 <template>
   <div>
-    <h1>Create an event</h1>
-    <form @submit.prevent="saveEvent">
-      <BaseInput v-model="event.category" type="text" label="Category" />
-      <h3>Name & describe your event</h3>
+    <h1>Create an organizer</h1>
+    <form @submit.prevent="saveOrganizer">
+      <BaseInput v-model="organizer.name" type="text" label="Name" />
 
-      <BaseInput v-model="event.title" type="text" label="Title" />
-
-      <BaseInput v-model="event.description" type="text" label="Description" />
-
-      <h3>Where is your event?</h3>
-
-      <BaseInput v-model="event.location" type="text" label="Location" />
-
-      <h3>Who is your organizer?</h3>
-
-      <BaseSelect
-        :options="GStore.organizers"
-        v-model="event.organizer.id"
-        label="Select an Organizer"
-      />
-      <h3>The image of the Event</h3>
-      <UploadImages @changed="handleImages" />
+      <h3>The image of the Organizer</h3>
+      <UploadImages :max="1" @changed="handleImages" />
 
       <button type="submit">Submit</button>
     </form>
 
-    <pre>{{ event }}</pre>
+    <pre>{{ organizer }}</pre>
   </div>
 </template>
 <script>
-import EventService from '@/services/EventService.js'
+import OrganizerService from '@/services/OrganizerService.js'
 import UploadImages from 'vue-upload-drop-images'
 
 export default {
   inject: ['GStore'],
-
+  
   components: {
     UploadImages
   },
 
   data() {
     return {
-      event: {
-        category: '',
-        title: '',
-        description: '',
-        location: '',
-        organizer: { id: '', name: '' },
+      organizer: {
+        name: '',
         imageUrls: []
       },
-      files: []
+       files: []
     }
   },
   methods: {
-    saveEvent() {
+    saveOrganizer() {
+      console.log(this.files)
       Promise.all(
         this.files.map((file) => {
-          return EventService.uploadFile(file)
+          return OrganizerService.uploadFile(file)
         })
       ).then((response) => {
-        this.event.imageUrls = response.map((r) => r.data)
-        EventService.saveEvent(this.event)
+        this.organizer.imageUrls = response.map((r) => r.data)
+        OrganizerService.saveOrganizers(this.organizer)
           .then((response) => {
             console.log(response)
             this.$router.push({
-              name: 'EventLayout',
+              name: 'OrganizerLayout',
               params: { id: response.data.id }
             })
             this.GStore.flashMessage =
-              'You are successfully add a new event for ' + response.data.title
+              'You are successfully add a new organizer for ' + response.data.name
             setTimeout(() => {
               this.GStore.flashMessage = ''
             }, 3000)
@@ -82,9 +63,6 @@ export default {
     handleImages(files) {
       this.files = files
     }
-  },
-  handleImages(files) {
-    this.files = files
   }
 }
 </script>
